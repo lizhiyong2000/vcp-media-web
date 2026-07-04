@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import Hls from "hls.js";
-import flvjs from "flv.js";
+import mpegts from "mpegts.js";
 import { toDirectFlvUrl, toDirectWebrtcWsUrl, toProxiedHlsUrl } from "@/utils/mediaUrl";
 import { WebrtcPlayer } from "@/utils/webrtcPlayer";
 
@@ -20,7 +20,7 @@ const errorMessage = ref("");
 const protocol = ref<PreviewProtocol>("hls");
 
 let hls: Hls | null = null;
-let flvPlayer: flvjs.Player | null = null;
+let flvPlayer: mpegts.Player | null = null;
 let webrtcPlayer: WebrtcPlayer | null = null;
 
 const proxiedHlsUrl = computed(() => toProxiedHlsUrl(props.hlsUrl));
@@ -43,7 +43,7 @@ const activeUrl = computed(() => {
 const protocolHint = computed(() => {
   if (protocol.value === "hls") return "HLS（m3u8）· 首帧需等待切片生成（约 1–3 秒）";
   if (protocol.value === "flv") {
-    return "HTTP-FLV · 低延迟直连 media-server · 需 H.264（不支持 H.265 FLV）";
+    return "HTTP-FLV · 低延迟直连 media-server · 支持 H.264 和 H.265";
   }
   return `WebRTC · 超低延迟 · 信令 ${directWebrtcWsUrl.value ?? ""} · stream_id=${props.streamId ?? ""}`;
 });
@@ -141,11 +141,7 @@ function startHls(video: HTMLVideoElement, url: string) {
 }
 
 function startFlv(video: HTMLVideoElement, url: string) {
-  if (!flvjs.isSupported()) {
-    errorMessage.value = "当前浏览器不支持 HTTP-FLV 播放（MSE）";
-    return;
-  }
-  flvPlayer = flvjs.createPlayer(
+  flvPlayer = mpegts.createPlayer(
     {
       type: "flv",
       url,
@@ -167,10 +163,10 @@ function startFlv(video: HTMLVideoElement, url: string) {
   flvPlayer.attachMediaElement(video);
   flvPlayer.load();
   flvPlayer.play();
-  flvPlayer.on(flvjs.Events.ERROR, (_type, _detail, info) => {
-    errorMessage.value = `FLV 播放失败：${info ?? "unknown"}（浏览器仅支持 H.264 FLV）`;
+  flvPlayer.on(mpegts.Events.ERROR, (_type, _detail, info) => {
+    errorMessage.value = `FLV 播放失败：${info ?? "unknown"}`;
   });
-  flvPlayer.on(flvjs.Events.STATISTICS_INFO, () => {
+  flvPlayer.on(mpegts.Events.STATISTICS_INFO, () => {
     errorMessage.value = "";
   });
 }
