@@ -20,3 +20,9 @@ export function toDirectFlvUrl(url: string | null | undefined): string | null {
   if (!url) return null;
   return url;
 }
+
+/** WebRTC 信令 WebSocket 直连 media-server（独立端口，不经 Vite proxy）。 */
+export function toDirectWebrtcWsUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  return url;
+}

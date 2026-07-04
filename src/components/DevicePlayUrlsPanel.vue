@@ -36,6 +36,10 @@ async function copy(text: string) {
         <span class="mono">{{ playUrls.hls }}</span>
         <el-button link type="primary" @click="copy(playUrls.hls!)">复制</el-button>
       </el-descriptions-item>
+      <el-descriptions-item v-if="playUrls.webrtcSignalingUrl" label="WebRTC 信令">
+        <span class="mono">{{ playUrls.webrtcSignalingUrl }}</span>
+        <el-button link type="primary" @click="copy(playUrls.webrtcSignalingUrl!)">复制</el-button>
+      </el-descriptions-item>
       <el-descriptions-item label="WebRTC 测试页">
         <a :href="playUrls.webrtcTestPage" target="_blank" rel="noreferrer">{{ playUrls.webrtcTestPage }}</a>
       </el-descriptions-item>

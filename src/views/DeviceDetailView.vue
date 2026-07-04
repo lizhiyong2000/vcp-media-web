@@ -132,6 +132,8 @@ onUnmounted(() => {
         <StreamPlayer
           :hls-url="playUrls?.hls"
           :flv-url="playUrls?.httpFlv"
+          :webrtc-ws-url="playUrls?.webrtcSignalingUrl"
+          :stream-id="id"
           :online="streamOnline"
         />
       </el-col>

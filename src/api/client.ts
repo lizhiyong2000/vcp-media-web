@@ -18,6 +18,7 @@ export interface MediaServer {
   publicHost: string;
   rtmpPort: number;
   rtspPort: number;
+  webrtcPort?: number;
   httpPort?: number;
   status?: string;
   streamCount?: number;
@@ -63,6 +64,7 @@ export interface PlayUrls {
   httpFlv?: string | null;
   hls?: string | null;
   webrtcTestPage: string;
+  webrtcSignalingUrl: string;
 }
 
 export interface StreamItem {
