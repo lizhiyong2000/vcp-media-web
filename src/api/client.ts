@@ -212,4 +212,63 @@ export async function fetchPlayUrls(id: string) {
   return data;
 }
 
+// ===================== Snapshot API =====================
+
+export interface SnapshotEntry {
+  id: string;
+  stream_id: string;
+  created_at_ms: number;
+  completed_at_ms: number | null;
+  path: string;
+  url: string;
+  format: string;
+  bytes: number;
+  status: "pending" | "completed" | "error";
+  error: string | null;
+}
+
+export interface SnapshotListResponse {
+  snapshots: SnapshotEntry[];
+}
+
+/** Submit a snapshot capture request for a given stream */
+export async function captureSnapshot(
+  streamId: string,
+): Promise<SnapshotEntry> {
+  const { data } = await api.post<{ snapshot: SnapshotEntry; message: string }>("/snapshot", {
+    stream_id: streamId,
+  });
+  return data.snapshot;
+}
+
+/** List all snapshot entries, optionally filtered by stream_id */
+export async function fetchSnapshots(streamId?: string): Promise<SnapshotListResponse> {
+  const params = streamId ? { stream_id: streamId } : undefined;
+  const { data } = await api.get<SnapshotListResponse>("/snapshots", { params });
+  return data;
+}
+
+/** Build the URL for a snapshot image thumbnail */
+export function snapshotImageUrl(snapshotId: string): string {
+  return `/api/snapshot-image/${encodeURIComponent(snapshotId)}`;
+}
+
+/** Poll snapshot status until completed or failed */
+export async function waitSnapshot(
+  snapshotId: string,
+  maxWaitMs: number = 15000,
+): Promise<SnapshotEntry> {
+  const start = Date.now();
+  while (Date.now() - start < maxWaitMs) {
+    const { data } = await api.get<{ snapshot: SnapshotEntry }>(
+      `/snapshots/${encodeURIComponent(snapshotId)}`,
+    );
+    if (data.snapshot.status === "completed" || data.snapshot.status === "error" || data.snapshot.status === "failed") {
+      return data.snapshot;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+  throw new Error(`snapshot ${snapshotId} timed out`);
+}
+
 export default api;

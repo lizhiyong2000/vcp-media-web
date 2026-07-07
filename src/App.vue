@@ -55,6 +55,9 @@ function navigate(path: string) {
           <el-menu-item index="/iptv/playitems">
             <span>播放地址</span>
           </el-menu-item>
+          <el-menu-item index="/iptv/pull-validate">
+            <span>拉流验证</span>
+          </el-menu-item>
         </el-sub-menu>
       </el-menu>
     </el-aside>

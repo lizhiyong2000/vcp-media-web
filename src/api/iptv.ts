@@ -194,4 +194,35 @@ export async function triggerVerify() {
   return data;
 }
 
+// ===================== 拉流验证 API =====================
+
+export interface PullValidateTask {
+  url: string;
+  stream_id: string;
+  protocol?: string;
+}
+
+export interface PullValidateResult {
+  stream_id: string;
+  url: string;
+  protocol: string;
+  status: string;
+  message: string;
+}
+
+export interface PullValidateResponse {
+  results: PullValidateResult[];
+  total: number;
+  success: number;
+  error: number;
+}
+
+export async function pullValidateTasks(tasks: PullValidateTask[]) {
+  const { data } = await iptvApi.post<IptvApiResponse<PullValidateResponse>>(
+    "/api/pull/validate",
+    { tasks },
+  );
+  return data;
+}
+
 export default iptvApi;

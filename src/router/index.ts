@@ -8,6 +8,7 @@ import IptvDashboardView from "@/views/IptvDashboardView.vue";
 import IptvChannelsView from "@/views/IptvChannelsView.vue";
 import IptvSourcesView from "@/views/IptvSourcesView.vue";
 import IptvPlayItemsView from "@/views/IptvPlayItemsView.vue";
+import PullValidateView from "@/views/PullValidateView.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -21,6 +22,7 @@ const router = createRouter({
     { path: "/iptv/channels", name: "iptv-channels", component: IptvChannelsView },
     { path: "/iptv/sources", name: "iptv-sources", component: IptvSourcesView },
     { path: "/iptv/playitems", name: "iptv-playitems", component: IptvPlayItemsView },
+    { path: "/iptv/pull-validate", name: "iptv-pull-validate", component: PullValidateView },
   ],
 });
 
