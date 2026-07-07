@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Cpu, DataAnalysis, Monitor, Platform } from "@element-plus/icons-vue";
+import { Cpu, DataAnalysis, Monitor, Platform, VideoCamera } from "@element-plus/icons-vue";
 
 const route = useRoute();
 const router = useRouter();
 
 const activeMenu = computed(() => {
+  if (route.path.startsWith("/iptv")) return "/iptv";
   if (route.path.startsWith("/servers")) return "/servers";
   if (route.path.startsWith("/devices")) return "/devices";
   return route.path;
@@ -37,13 +38,31 @@ function navigate(path: string) {
           <el-icon><Cpu /></el-icon>
           <span>设备</span>
         </el-menu-item>
+        <el-sub-menu index="/iptv">
+          <template #title>
+            <el-icon><VideoCamera /></el-icon>
+            <span>IPTV管理</span>
+          </template>
+          <el-menu-item index="/iptv">
+            <span>概览</span>
+          </el-menu-item>
+          <el-menu-item index="/iptv/channels">
+            <span>频道</span>
+          </el-menu-item>
+          <el-menu-item index="/iptv/sources">
+            <span>播源</span>
+          </el-menu-item>
+          <el-menu-item index="/iptv/playitems">
+            <span>播放地址</span>
+          </el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
 
     <el-container>
       <el-header class="header">
         <div>流媒体管理控制台</div>
-        <div class="header-sub">Media Server · 设备 · vcp-media-manager</div>
+        <div class="header-sub">Media Server · 设备 · IPTV管理 · vcp-media-manager</div>
       </el-header>
       <el-main class="main">
         <router-view />
@@ -83,6 +102,19 @@ function navigate(path: string) {
 .aside :deep(.el-menu-item.is-active) {
   background: rgba(37, 99, 235, 0.2);
   color: #fff;
+}
+
+.aside :deep(.el-sub-menu__title) {
+  color: #d1d5db;
+}
+
+.aside :deep(.el-sub-menu__title):hover {
+  background: rgba(37, 99, 235, 0.1);
+}
+
+.aside :deep(.el-sub-menu .el-menu-item) {
+  padding-left: 52px !important;
+  min-width: auto;
 }
 
 .header {

@@ -21,6 +21,11 @@ export default defineConfig({
         changeOrigin: true,
       },
       // 注意：/flv 不要走 proxy（chunked 长连接会被缓冲）。FLV 直连 8081。
+      "/iptv": {
+        target: "http://127.0.0.1:5001",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/iptv/, ""),
+      },
     },
   },
 });

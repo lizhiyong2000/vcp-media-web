@@ -4,6 +4,10 @@ import ServersView from "@/views/ServersView.vue";
 import ServerDetailView from "@/views/ServerDetailView.vue";
 import DevicesView from "@/views/DevicesView.vue";
 import DeviceDetailView from "@/views/DeviceDetailView.vue";
+import IptvDashboardView from "@/views/IptvDashboardView.vue";
+import IptvChannelsView from "@/views/IptvChannelsView.vue";
+import IptvSourcesView from "@/views/IptvSourcesView.vue";
+import IptvPlayItemsView from "@/views/IptvPlayItemsView.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -13,6 +17,10 @@ const router = createRouter({
     { path: "/servers/:id", name: "server-detail", component: ServerDetailView, props: true },
     { path: "/devices", name: "devices", component: DevicesView },
     { path: "/devices/:id", name: "device-detail", component: DeviceDetailView, props: true },
+    { path: "/iptv", name: "iptv", component: IptvDashboardView },
+    { path: "/iptv/channels", name: "iptv-channels", component: IptvChannelsView },
+    { path: "/iptv/sources", name: "iptv-sources", component: IptvSourcesView },
+    { path: "/iptv/playitems", name: "iptv-playitems", component: IptvPlayItemsView },
   ],
 });
 
