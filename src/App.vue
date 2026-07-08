@@ -46,11 +46,11 @@ function navigate(path: string) {
           <el-menu-item index="/iptv">
             <span>概览</span>
           </el-menu-item>
-          <el-menu-item index="/iptv/channels">
-            <span>频道</span>
-          </el-menu-item>
           <el-menu-item index="/iptv/sources">
             <span>播源</span>
+          </el-menu-item>
+          <el-menu-item index="/iptv/channels">
+            <span>频道</span>
           </el-menu-item>
           <el-menu-item index="/iptv/playitems">
             <span>播放地址</span>

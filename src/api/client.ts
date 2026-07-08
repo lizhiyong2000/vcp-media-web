@@ -195,14 +195,64 @@ export async function fetchMetrics() {
   return data;
 }
 
-export async function pullRtmp(payload: { url: string; stream_id: string }) {
-  const { data } = await api.post("/pull/rtmp", payload);
-  return data;
+interface StreamRingMetrics {
+  latest_seq?: number;
+  latest_idr_seq?: number | null;
 }
 
-export async function pullRtsp(payload: { url: string; stream_id: string }) {
-  const { data } = await api.post("/pull/rtsp", payload);
-  return data;
+interface StreamMetricsEntry {
+  stream_id?: string;
+  ring?: StreamRingMetrics;
+}
+
+function collectStreamMetricsEntries(data: Record<string, unknown>): StreamMetricsEntry[] {
+  const direct = data.streams;
+  if (Array.isArray(direct)) {
+    return direct as StreamMetricsEntry[];
+  }
+
+  const servers = data.servers;
+  if (servers && typeof servers === "object") {
+    const out: StreamMetricsEntry[] = [];
+    for (const serverMetrics of Object.values(servers as Record<string, unknown>)) {
+      if (!serverMetrics || typeof serverMetrics !== "object") continue;
+      const streams = (serverMetrics as Record<string, unknown>).streams;
+      if (Array.isArray(streams)) {
+        out.push(...(streams as StreamMetricsEntry[]));
+      }
+    }
+    return out;
+  }
+
+  return [];
+}
+
+/** Wait until a pull stream has published video frames (IDR preferred). */
+export async function waitForStreamKeyframe(
+  streamId: string,
+  maxWaitMs = 120_000,
+  pollMs = 1000,
+): Promise<boolean> {
+  const deadline = Date.now() + maxWaitMs;
+  while (Date.now() < deadline) {
+    try {
+      const metrics = await fetchMetrics();
+      const entry = collectStreamMetricsEntries(metrics).find(
+        (item) => item.stream_id === streamId,
+      );
+      const ring = entry?.ring;
+      if (ring?.latest_idr_seq != null && ring.latest_idr_seq > 0) {
+        return true;
+      }
+      if ((ring?.latest_seq ?? 0) > 0) {
+        return true;
+      }
+    } catch {
+      // ignore transient metrics errors during batch validation
+    }
+    await new Promise((resolve) => setTimeout(resolve, pollMs));
+  }
+  return false;
 }
 
 export async function fetchPlayUrls(id: string) {
@@ -248,15 +298,10 @@ export async function fetchSnapshots(streamId?: string): Promise<SnapshotListRes
   return data;
 }
 
-/** Build the URL for a snapshot image thumbnail */
-export function snapshotImageUrl(snapshotId: string): string {
-  return `/api/snapshot-image/${encodeURIComponent(snapshotId)}`;
-}
-
 /** Poll snapshot status until completed or failed */
 export async function waitSnapshot(
   snapshotId: string,
-  maxWaitMs: number = 15000,
+  maxWaitMs: number = 130_000,
 ): Promise<SnapshotEntry> {
   const start = Date.now();
   while (Date.now() - start < maxWaitMs) {

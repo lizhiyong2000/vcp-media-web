@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { ElMessage } from "element-plus";
-import { pullRtmp, pullRtsp } from "@/api/client";
+import { pullRtmp, pullRtsp } from "@/api/iptv";
 
 const loading = ref(false);
 const form = ref({

@@ -8,7 +8,6 @@ import {
   exportM3u8,
   type IptvPlayItem,
 } from "@/api/iptv";
-import { snapshotImageUrl } from "@/api/client";
 import { usePullValidateStore, type ValidatedItemState } from "@/stores/pullValidateStore";
 import { ElMessage } from "element-plus";
 
@@ -20,7 +19,7 @@ const total = ref(0);
 const loading = ref(false);
 const channel = ref("");
 const source = ref("");
-const isValid = ref<string>("");
+const pullStatus = ref("");
 const keyword = ref("");
 const pageNum = ref(1);
 const pageSize = ref(50);
@@ -70,11 +69,7 @@ function addToPullValidate() {
   }
   store.addToQueue(selected);
   selectedIds.value.clear();
-  ElMessage.success(`已添加 ${selected.length} 条到拉流验证队列`);
-}
-
-// 跳转到拉流验证页
-function goToPullValidate() {
+  ElMessage.success(`已添加 ${selected.length} 条，正在跳转并自动验证`);
   router.push("/iptv/pull-validate");
 }
 
@@ -84,7 +79,9 @@ async function loadPlayItems() {
     const res = await fetchPlayItems({
       channel: channel.value || undefined,
       source: source.value || undefined,
-      is_valid: isValid.value === "true" ? true : isValid.value === "false" ? false : undefined,
+      pull_status: pullStatus.value
+        ? (pullStatus.value as "unvalidated" | "running" | "completed" | "snapshot_ok" | "failed")
+        : undefined,
       keyword: keyword.value || undefined,
       page_num: pageNum.value,
       page_size: pageSize.value,
@@ -172,6 +169,7 @@ function getValidatedState(itemId: number): ValidatedItemState | undefined {
 function validatedStatusTag(itemId: number) {
   const v = getValidatedState(itemId);
   if (!v) return { text: "", type: "" };
+  if (v.snapshot?.status === "completed") return { text: "截图成功", type: "success" };
   if (v.status === "done") return { text: "拉流成功", type: "success" };
   if (v.status === "no-stream") return { text: "无流", type: "info" };
   if (v.status === "error") return { text: "拉流失败", type: "danger" };
@@ -202,11 +200,6 @@ onMounted(() => {
         >
           添加到拉流验证 ({{ selectedCount }})
         </el-button>
-        <el-badge :value="store.queueCount.value" :hidden="store.queueCount.value === 0" :max="99">
-          <el-button type="warning" plain @click="goToPullValidate">
-            去验证
-          </el-button>
-        </el-badge>
       </div>
     </div>
 
@@ -247,14 +240,17 @@ onMounted(() => {
         />
       </el-select>
       <el-select
-        v-model="isValid"
-        placeholder="验证状态"
+        v-model="pullStatus"
+        placeholder="拉流状态"
         clearable
         style="width: 140px; margin-left: 12px"
         @change="handleSearch"
       >
-        <el-option label="有效" value="true" />
-        <el-option label="无效" value="false" />
+        <el-option label="未验证" value="unvalidated" />
+        <el-option label="验证中" value="running" />
+        <el-option label="拉流成功" value="completed" />
+        <el-option label="截图成功" value="snapshot_ok" />
+        <el-option label="拉流失败" value="failed" />
       </el-select>
       <el-button type="primary" style="margin-left: 12px" @click="handleSearch">
         搜索
@@ -282,21 +278,6 @@ onMounted(() => {
             :disabled="store.queuedIds.value.has(row.id)"
             @change="() => toggleItem(row.id)"
           />
-        </template>
-      </el-table-column>
-      <el-table-column label="源状态" width="80" align="center">
-        <template #default="{ row }">
-          <template v-if="store.queuedIds.value.has(row.id)">
-            <el-tag type="warning" size="small">待验证</el-tag>
-          </template>
-          <template v-else-if="row.last_checked === null">
-            <el-tag type="warning" size="small">未验证</el-tag>
-          </template>
-          <template v-else>
-            <el-tag :type="row.is_valid ? 'success' : 'danger'" size="small">
-              {{ row.is_valid ? '有效' : '无效' }}
-            </el-tag>
-          </template>
         </template>
       </el-table-column>
       <el-table-column label="拉流验证" width="140" align="center">
